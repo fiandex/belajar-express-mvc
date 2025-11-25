@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const { z } = require('zod');
+const bcrypt = require('bcrypt');
 
 const getAllUsers = async () => {
     const users = await prisma.user.findMany();
@@ -10,6 +11,7 @@ const registerUser = async (userData) => {
     const userSchema = z.object({
         nama: z.string().min(3, "Nama harus minimal 3 karakter"),
         email: z.string().email("Email tidak valid"),
+        password: z.string().min(6, "Password harus minimal 6 karakter")
     });
 
     const validationResult = userSchema.safeParse(userData);
@@ -27,11 +29,20 @@ const registerUser = async (userData) => {
         throw new Error("Email sudah terdaftar");
     }
 
+    const hashedPassword = await bcrypt.hash(validationResult.data.password, 10);
+
     const newUser = await prisma.user.create({
-        data: validationResult.data
+        data: {
+            nama: validationResult.data.nama,
+            email: validationResult.data.email,
+            password: hashedPassword
+        }
     });
 
-    return newUser;
+    const {password, ...userWithoutPassword} = newUser;
+
+
+    return userWithoutPassword;
 };
 
 module.exports = {
