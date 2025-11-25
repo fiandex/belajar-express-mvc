@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const port = 3000;
 const morgan = require('morgan');
+const path = require('path');
 
 const { logger, stream } = require('./src/utils/logger');
 
@@ -10,18 +11,22 @@ const { logger, stream } = require('./src/utils/logger');
 const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const productRoutes = require('./src/routes/productRoutes');
+const uploadRoutes = require('./src/routes/uploadRoutes');
 
 app.use(express.json());
 
 // --- PASANG LOGGER DI SINI ---
 // Gunakan format 'combined' atau 'dev', lalu arahkan ke stream winston
 app.use(morgan('tiny', { stream })); 
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
 
 // --- ROUTING UTAMA ---
 // Artinya: Semua URL yang depannya '/users', serahkan ke userRoutes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/products', productRoutes);
+app.use('/upload', uploadRoutes);
 
 // Root route
 app.get('/', (req, res) => {

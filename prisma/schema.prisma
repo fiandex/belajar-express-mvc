@@ -19,5 +19,6 @@ model Product {
   id        Int      @id @default(autoincrement())
   title     String
   price     Int
+  image     String?  // <-- Tambah ini (Boleh null/kosong dulu)
   createdAt DateTime @default(now())
 }
