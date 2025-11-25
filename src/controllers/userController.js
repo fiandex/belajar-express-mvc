@@ -43,7 +43,33 @@ const createUser = async (req, res) => {
     }
 };
 
+const deleteUser = async (req, res) => {
+    const targetId = parseInt(req.params.id);
+
+    const loggedInUser = req.user;
+
+    if (loggedInUser.id !== targetId) {
+        return res.status(403).json({
+            message: "Anda tidak memiliki izin untuk menghapus user ini"
+        });
+    }
+
+    try {
+        await userService.deleteUserById(targetId);
+
+        res.json({
+            message: "User berhasil dihapus"
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Gagal menghapus user", error: error.message
+        });
+    }
+};
+
+
 module.exports = {
     getUsers,
-    createUser
+    createUser,
+    deleteUser
 };

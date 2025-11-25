@@ -45,7 +45,23 @@ const registerUser = async (userData) => {
     return userWithoutPassword;
 };
 
+
+const deleteUserById = async (userId) => {
+    const user = await prisma.user.delete({
+        where: { id: userId }
+    });
+    if (!user) {
+        throw new Error("User tidak ditemukan");
+    }
+
+    await prisma.user.delete({
+        where: { id: userId }
+    });
+    return user;
+}
+
 module.exports = {
     getAllUsers,
-    registerUser
+    registerUser,
+    deleteUserById
 };

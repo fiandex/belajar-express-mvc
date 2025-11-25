@@ -18,6 +18,7 @@ const getProducts = async (req, res) => {
 
 const createProduct = async (req, res) => {
     try {
+        console.log('User Info:', req.user); // Log user info for debugging
         const newProduct = await productService.addProduct(req.body);
         res.status(201).json({
             message: "Produk berhasil ditambahkan",
@@ -31,7 +32,10 @@ const createProduct = async (req, res) => {
     }
 };
 
+
+
 module.exports = {
     getProducts,
-    createProduct
+    createProduct,
+
 };
