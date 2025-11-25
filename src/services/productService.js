@@ -7,10 +7,13 @@ const getAllProducts = async () => {
 };
 
 
-const addProduct = async (productData) => {
+const createProduct = async (productData) => {
+    // 1. Update Validasi Zod
     const productSchema = z.object({
-        title: z.string().min(3, "Nama produk harus minimal 3 karakter"),
-        price: z.number().positive("Harga harus berupa angka positif"),
+        title: z.string().min(3),
+        // z.coerce.number() akan memaksa string "1000" jadi angka 1000
+        price: z.coerce.number().min(1000), 
+        image: z.string().optional() // Image boleh ada boleh tidak
     });
 
     const validationResult = productSchema.safeParse(productData);
@@ -19,14 +22,18 @@ const addProduct = async (productData) => {
         throw new Error(validationResult.error.errors.map(err => err.message).join(", "));
     }
 
+    // 2. Simpan ke Database
     const newProduct = await prisma.product.create({
-        data: validationResult.data
+        data: {
+            title: validationResult.data.title,
+            price: validationResult.data.price,
+            image: validationResult.data.image // Simpan URL gambar
+        }
     });
 
     return newProduct;
 };
-
 module.exports = {
     getAllProducts,
-    addProduct
+    createProduct
 };
