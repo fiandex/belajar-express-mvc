@@ -7,6 +7,7 @@ const { logger, stream } = require('./src/utils/logger');
 
 
 // Import Routes
+const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const productRoutes = require('./src/routes/productRoutes');
 
@@ -18,6 +19,7 @@ app.use(morgan('tiny', { stream }));
 
 // --- ROUTING UTAMA ---
 // Artinya: Semua URL yang depannya '/users', serahkan ke userRoutes
+app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/products', productRoutes);
 
