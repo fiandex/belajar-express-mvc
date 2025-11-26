@@ -41,6 +41,15 @@ app.get('/', (req, res) => {
     res.send('Server MVC + Logger siap!');
 });
 
-app.listen(port, () => {
-    console.log(`Server jalan di http://localhost:${port}`);
-});
+// app.listen(port, () => {
+//     console.log(`Server jalan di http://localhost:${port}`);
+// });
+
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`Server jalan di http://localhost:${port}`);
+    }
+    );
+}
+
+module.exports = app;
