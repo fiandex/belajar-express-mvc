@@ -1,4 +1,5 @@
 const productService = require('../services/productService');
+const imagekit = require('../utils/imagekit');
 const { product } = require('../utils/prisma');
 
 const getAllProducts = async (req, res) => {
@@ -53,26 +54,31 @@ const getMyProducts = async (req, res) => {
 
 const createProduct = async (req, res) => {
     try {
-        // 1. Ambil data teks
         const { title, price } = req.body;
+        const userId = req.user.id;
         
-        // 2. Ambil data file (Kalau user upload)
-        // Kita buat URL-nya: /uploads/namafile.jpg
-        const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+        let imageUrl = null;
 
-        const userId = req.user.id; // Dapatkan userId dari token yang sudah di-authenticate
+        // --- LOGIKA UPLOAD KE IMAGEKIT ---
+        if (req.file) {
+            // Kita upload buffer file ke ImageKit
+            const uploadResponse = await imagekit.upload({
+                file: req.file.buffer, // File dari Memory Storage
+                fileName: `product-${Date.now()}-${req.file.originalname}`, // Nama file
+                folder: '/toko-online' // (Opsional) Nama folder di ImageKit
+            });
 
-        // 3. Gabungkan jadi satu object untuk dikirim ke Service
-        const productData = {
-            title,
-            price,
-            image: imageUrl 
-        };
+            // Ambil URL Permanen dari response ImageKit
+            imageUrl = uploadResponse.url;
+        }
+        // ---------------------------------
+
+        const productData = { title, price, image: imageUrl };
 
         const newProduct = await productService.createProduct(productData, userId);
 
         res.status(201).json({
-            message: "Produk berhasil dibuat + Gambar!",
+            message: "Produk berhasil dibuat & Upload ke Cloud!",
             data: newProduct
         });
 
