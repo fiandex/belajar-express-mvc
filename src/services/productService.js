@@ -1,21 +1,112 @@
 const prisma = require('../utils/prisma');
 const { z } = require('zod');
 
-const getAllProducts = async () => {
+const getAllProducts = async (params) => {
+    const {
+        page = 1,
+        limit = 10,
+        search = '',
+        minPrice,
+        maxPrice,
+        sortBy = 'createdAt',
+        order = 'desc'
+    } = params;
+
+    const pageNUm = parseInt(page);
+    const limitNum = parseInt(limit);
+    const offset = (pageNUm - 1) * limitNum;
+
+    const whereClause = {
+        title : {
+            contains: search,
+            mode: 'insensitive'
+        }
+    };
+
+    if (minPrice) {
+        whereClause.price = { ...whereClause.price, gte: parseInt(minPrice) };
+    }
+    if (maxPrice) {
+        whereClause.price = { ...whereClause.price, lte: parseInt(maxPrice) };
+    }
     const products = await prisma.product.findMany({
+        where: whereClause,
+        skip: offset,
+        take: limitNum,
+        orderBy: {
+            [sortBy]: order
+        },
         include: {
             user: {
                 select: {
                     id: true,
-                    nama: true,
-                    email: true
-                }
+                    nama: true,}
             }
         }
     });
-    return products;
+
+    const totalCount = await prisma.product.count({
+        where: whereClause
+    });
+
+    return {
+        data: products,
+        meta: {
+            page: pageNUm,
+            limit: limitNum,
+            totalData: totalCount,
+            totalPages: Math.ceil(totalCount / limitNum)
+        }
+    };
 };
 
+const getMyProducts = async (userId, params) => {
+    const {
+        page = 1, limit = 10, search = '', 
+        minPrice, maxPrice, sortBy = 'createdAt', order = 'desc'
+    } = params;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const offset = (pageNum - 1) * limitNum;
+
+    const whereClause = {
+        userId: userId,
+        title: {
+            contains: search,
+            mode: 'insensitive'
+        }
+    };
+
+    if (minPrice) {
+        whereClause.price = { ...whereClause.price, gte: parseInt(minPrice) };
+    }
+    if (maxPrice) {
+        whereClause.price = { ...whereClause.price, lte: parseInt(maxPrice) };
+    }
+    const products = await prisma.product.findMany({
+        where: whereClause,
+        skip: offset,
+        take: limitNum,
+        orderBy: {
+            [sortBy]: order
+        }
+    });
+
+    const totalCount = await prisma.product.count({
+        where: whereClause
+    });
+
+    return {
+        data: products,
+        meta: {
+            page: pageNum,
+            limit: limitNum,
+            totalData: totalCount,
+            totalPages: Math.ceil(totalCount / limitNum)
+        }
+    };
+}
 
 const createProduct = async (productData, userId) => {
     // 1. Update Validasi Zod
@@ -67,6 +158,7 @@ const deleteProductById = async (productId, requesterId) => {
 
 module.exports = {
     getAllProducts,
+    getMyProducts,
     createProduct,
     deleteProductById
 };

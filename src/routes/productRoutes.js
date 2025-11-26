@@ -4,7 +4,8 @@ const productController = require('../controllers/productController');
 const authenticateToken = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 
-router.get('/', productController.getProducts);
+router.get('/', productController.getAllProducts);
+router.get('/my-products', authenticateToken, productController.getMyProducts);
 router.post('/', authenticateToken, upload.single('image'),productController.createProduct);
 router.delete('/:id', authenticateToken, productController.deleteProduct);
 

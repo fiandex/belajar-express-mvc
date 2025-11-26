@@ -1,12 +1,14 @@
 const productService = require('../services/productService');
 const { product } = require('../utils/prisma');
 
-const getProducts = async (req, res) => {
+const getAllProducts = async (req, res) => {
     try {
-        const products = await productService.getAllProducts();
+        const result = await productService.getAllProducts(req.query);
+
         res.json({
             message: "Berhasil ambil produk",
-            data: products
+            meta: result.meta,
+            data: result.data
         });
     } catch (error) {
         res.status(500).json({
@@ -15,6 +17,39 @@ const getProducts = async (req, res) => {
         });
     }
 };
+
+const getMyProducts = async (req, res) => {
+    try {
+        const userId = req.user.id; // Dapatkan userId dari token yang sudah di-authenticate
+        const result = await productService.getMyProducts(userId, req.query);
+
+        res.json({
+            message: "Berhasil ambil produk milik saya",
+            meta: result.meta,
+            data: result.data
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Gagal ambil produk milik saya",
+            error: error.message
+        })
+    }
+};
+
+// const getProducts = async (req, res) => {
+//     try {
+//         const products = await productService.getAllProducts();
+//         res.json({
+//             message: "Berhasil ambil produk",
+//             data: products
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             message: "Gagal ambil produk",
+//             error: error.message
+//         });
+//     }
+// };
 
 const createProduct = async (req, res) => {
     try {
@@ -66,11 +101,10 @@ const deleteProduct = async (req, res) => {
         res.status(500).json({ message: "Gagal menghapus produk", error: error.message });
     }
 };
-    
-
 
 module.exports = {
-    getProducts,
+    getAllProducts,
+    getMyProducts,
     createProduct,
     deleteProduct
 };
