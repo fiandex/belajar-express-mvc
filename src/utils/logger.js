@@ -13,9 +13,11 @@ const logLevels = {
   },
 };
 
+// Aktifkan warna
 winston.addColors(logLevels.colors);
 
 // 2. Format untuk FILE (Polos + Timestamp)
+// Digunakan saat di laptop biar log-nya bersih saat dibuka di text editor
 const fileFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.printf(
@@ -24,6 +26,7 @@ const fileFormat = winston.format.combine(
 );
 
 // 3. Format untuk CONSOLE (Warna-warni)
+// Digunakan di Terminal Laptop & Logs Dashboard Vercel
 const consoleFormat = winston.format.combine(
   winston.format.colorize({ all: true }),
   winston.format.timestamp({ format: 'HH:mm:ss' }),
@@ -32,34 +35,47 @@ const consoleFormat = winston.format.combine(
   )
 );
 
-// 4. Bikin Instance Logger
-const logger = winston.createLogger({
-  levels: logLevels.levels,
-  transports: [
-    // Tampil di Terminal
+// ===============================================
+// 4. LOGIC PENENTUAN TRANSPORT (PERBAIKAN UTAMA)
+// ===============================================
+
+// Secara default, kita selalu ingin log muncul di Console/Terminal
+const transports = [
     new winston.transports.Console({ 
         format: consoleFormat 
-    }),
-    // Simpan ke File Combined
-    new winston.transports.File({ 
-        filename: 'logs/combined.log', 
-        format: fileFormat 
-    }),
-    // Simpan ke File Error
-    new winston.transports.File({ 
-        filename: 'logs/error.log', 
-        level: 'error', 
-        format: fileFormat 
-    }),
-  ],
+    })
+];
+
+// Kita cek: Apakah kita sedang di Laptop (Development)?
+// Jika IYA, maka tambahkan fitur simpan ke File.
+// Jika TIDAK (sedang di Vercel/Production), jangan tambahkan ini (biar gak error Read-Only FS).
+if (process.env.NODE_ENV !== 'production') {
+    transports.push(
+        new winston.transports.File({ 
+            filename: 'logs/combined.log', 
+            format: fileFormat 
+        })
+    );
+    transports.push(
+        new winston.transports.File({ 
+            filename: 'logs/error.log', 
+            level: 'error', 
+            format: fileFormat 
+        })
+    );
+}
+
+// 5. Buat Instance Logger
+const logger = winston.createLogger({
+  levels: logLevels.levels,
+  transports: transports, // Gunakan array transports yang sudah dikondisikan di atas
 });
 
-// 5. Bikin Stream untuk Morgan (Agar Morgan kirim log ke Winston)
+// 6. Buat Stream untuk Morgan
 const stream = {
   write: (message) => {
     logger.http(message.trim());
   },
 };
 
-// Export logger dan stream biar bisa dipake di file lain
 module.exports = { logger, stream };
