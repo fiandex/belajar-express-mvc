@@ -4,16 +4,23 @@ const port = 3000;
 const morgan = require('morgan');
 const path = require('path');
 
+const cors = require('cors');
+const helmet = require('helmet');
+
 const { logger, stream } = require('./src/utils/logger');
 
 
 // Import Routes
+const rateLimiter = require('./src/middlewares/rateLimiter');
 const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const productRoutes = require('./src/routes/productRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
 
 app.use(express.json());
+app.use(helmet());
+app.use(cors());
+app.use(rateLimiter); // Pasang rate limiter di sini
 
 // --- PASANG LOGGER DI SINI ---
 // Gunakan format 'combined' atau 'dev', lalu arahkan ke stream winston
