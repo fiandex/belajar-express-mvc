@@ -5,7 +5,7 @@ const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 menit dalam milidetik
 
     // 2. Batas Maksimal Request per IP
-	limit: 5, // Maksimal 100 request per 15 menit
+	limit: 50, // Maksimal 100 request per 15 menit
     
     // 3. Konfigurasi Header (Standar baru)
 	standardHeaders: true, // Mengirim info limit di header `RateLimit-*`
