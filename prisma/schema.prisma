@@ -8,17 +8,26 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
   nama      String?
   password  String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  
+  // RELASI: Satu User bisa punya banyak Product
+  products  Product[] 
 }
 
 model Product {
   id        Int      @id @default(autoincrement())
   title     String
   price     Int
-  image     String?  // <-- Tambah ini (Boleh null/kosong dulu)
+  image     String?
   createdAt DateTime @default(now())
+
+  // RELASI: Produk ini milik SATU User
+  // Ini kolom Foreign Key di database
+  userId    Int      
+  // Ini definisi relasi untuk Prisma (Virtual)
+  user      User     @relation(fields: [userId], references: [id])
 }

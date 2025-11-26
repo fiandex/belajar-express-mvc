@@ -2,12 +2,22 @@ const prisma = require('../utils/prisma');
 const { z } = require('zod');
 
 const getAllProducts = async () => {
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    nama: true,
+                    email: true
+                }
+            }
+        }
+    });
     return products;
 };
 
 
-const createProduct = async (productData) => {
+const createProduct = async (productData, userId) => {
     // 1. Update Validasi Zod
     const productSchema = z.object({
         title: z.string().min(3),
@@ -27,13 +37,36 @@ const createProduct = async (productData) => {
         data: {
             title: validationResult.data.title,
             price: validationResult.data.price,
-            image: validationResult.data.image // Simpan URL gambar
+            image: validationResult.data.image, // Simpan URL gambar
+
+            userId: userId
         }
     });
 
     return newProduct;
 };
+
+const deleteProductById = async (productId, requesterId) => {
+    const product = await prisma.product.findUnique({
+        where: { id: productId }
+    });
+    if (!product) {
+        throw new Error("Produk tidak ditemukan");
+    }
+    if (product.userId !== requesterId) {
+        throw new Error("Anda tidak berhak menghapus produk ini");
+    }
+
+    await prisma.product.delete({
+        where: { id: productId }
+    });
+
+
+    return;
+}
+
 module.exports = {
     getAllProducts,
-    createProduct
+    createProduct,
+    deleteProductById
 };

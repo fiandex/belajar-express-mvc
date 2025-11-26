@@ -25,6 +25,8 @@ const createProduct = async (req, res) => {
         // Kita buat URL-nya: /uploads/namafile.jpg
         const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
+        const userId = req.user.id; // Dapatkan userId dari token yang sudah di-authenticate
+
         // 3. Gabungkan jadi satu object untuk dikirim ke Service
         const productData = {
             title,
@@ -32,7 +34,7 @@ const createProduct = async (req, res) => {
             image: imageUrl 
         };
 
-        const newProduct = await productService.createProduct(productData);
+        const newProduct = await productService.createProduct(productData, userId);
 
         res.status(201).json({
             message: "Produk berhasil dibuat + Gambar!",
@@ -45,9 +47,30 @@ const createProduct = async (req, res) => {
 };
 
 
+const deleteProduct = async (req, res) => {
+    try {
+        const productId = parseInt(req.params.id);
+        const requesterId = req.user.id; // Dapatkan userId dari token yang sudah di-authenticate
+
+        await productService.deleteProductById(productId, requesterId);
+
+        res.json({ message: "Produk berhasil dihapus" });
+    } catch (error) {
+        if (error.message === "Produk tidak ditemukan") {
+            res.status(404).json({ message: error.message });
+        }
+        if (error.message === "Anda tidak berhak menghapus produk ini") {
+            res.status(403).json({ message: error.message });
+        }
+
+        res.status(500).json({ message: "Gagal menghapus produk", error: error.message });
+    }
+};
+    
+
 
 module.exports = {
     getProducts,
     createProduct,
-
+    deleteProduct
 };
