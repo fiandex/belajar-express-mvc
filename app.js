@@ -3,6 +3,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 const morgan = require('morgan');
 const path = require('path');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./src/utils/swagger');
 
 const cors = require('cors');
 const helmet = require('helmet');
@@ -26,6 +28,7 @@ app.use(rateLimiter); // Pasang rate limiter di sini
 // Gunakan format 'combined' atau 'dev', lalu arahkan ke stream winston
 app.use(morgan('tiny', { stream })); 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 // --- ROUTING UTAMA ---

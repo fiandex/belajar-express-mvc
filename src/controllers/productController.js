@@ -2,6 +2,46 @@ const productService = require('../services/productService');
 const imagekit = require('../utils/imagekit');
 const { product } = require('../utils/prisma');
 
+
+/**
+ * @swagger
+ * /products:
+ *   get:
+ *     summary: Mengambil semua data produk
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Halaman ke berapa (Pagination)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Jumlah data per halaman
+ *     responses:
+ *       200:
+ *         description: Berhasil mengambil data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       title:
+ *                         type: string
+ *                       price:
+ *                         type: integer
+ */
 const getAllProducts = async (req, res) => {
     try {
         const result = await productService.getAllProducts(req.query);
