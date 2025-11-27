@@ -48,11 +48,11 @@ app.get('/', (req, res) => {
 //     console.log(`Server jalan di http://localhost:${port}`);
 // });
 
-if (require.main === module) {
-    app.listen(port, () => {
-        console.log(`Server jalan di http://localhost:${port}`);
-    }
-    );
-}
+// if (require.main === module) {
+//     app.listen(port, () => {
+//         console.log(`Server jalan di http://localhost:${port}`);
+//     }
+//     );
+// }
 
 module.exports = app;
