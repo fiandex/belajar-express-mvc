@@ -1,0 +1,41 @@
+name: Node.js CI/CD Test
+
+# Kapan robot ini bekerja?
+# Setiap kali ada PUSH ke branch 'main'
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # Pakai OS Linux terbaru
+
+    steps:
+    # 1. Ambil kodingan dari repo
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Install Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18' # Sesuaikan dengan versi Node Anda
+        cache: 'npm'
+
+    # 3. Install dependencies (sama kayak npm install)
+    - name: Install Dependencies
+      run: npm install
+
+    # 4. Generate Prisma Client (PENTING! Tanpa ini test error)
+    - name: Generate Prisma
+      run: npx prisma generate
+
+    # 5. Jalankan Test
+    # Kita suntikkan Environment Variable dari Secrets GitHub di sini
+    - name: Run Tests
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      run: npm test
