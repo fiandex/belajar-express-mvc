@@ -20,7 +20,10 @@ const productRoutes = require('./src/routes/productRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
 
 app.use(express.json());
-app.use(helmet());
+// app.use(helmet({
+//     contentSecurityPolicy: false, // Matikan fitur CSP sebentar biar chat jalan
+//     crossOriginEmbedderPolicy: false
+// }));
 app.use(cors());
 app.use(rateLimiter); // Pasang rate limiter di sini
 
@@ -38,6 +41,11 @@ app.use('/users', userRoutes);
 app.use('/products', productRoutes);
 app.use('/upload', uploadRoutes);
 
+// Route khusus buat ngetes chat
+app.get('/chat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/chat.html'));
+});
+
 // Root route
 app.get('/', (req, res) => {
     logger.info("Ada yang akses Home Page"); // Contoh pakai logger manual
@@ -54,5 +62,9 @@ app.get('/', (req, res) => {
 //     }
 //     );
 // }
+// Route khusus buat ngetes chat
+app.get('/chat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/chat.html'));
+});
 
 module.exports = app;

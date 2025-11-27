@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Realtime</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #messages { list-style-type: none; padding: 0; }
+        #messages li { padding: 8px; margin-bottom: 5px; background: #eee; border-radius: 5px; }
+        form { display: flex; margin-top: 20px; }
+        input { flex: 1; padding: 10px; }
+        button { padding: 10px 20px; background: blue; color: white; border: none; cursor: pointer; }
+        
+        /* Style untuk teks typing */
+        #typing-status {
+            font-size: 0.9em;
+            color: gray;
+            font-style: italic;
+            height: 20px; /* Biar layout gak lompat pas teks muncul */
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>💬 Global Chat Room</h1>
+    <ul id="messages"></ul>
+    
+    <!-- Tempat munculin tulisan "Sedang mengetik..." -->
+    <div id="typing-status"></div>
+
+    <form id="chat-form">
+        <input id="input-pesan" autocomplete="off" placeholder="Ketik pesan..." />
+        <button>Kirim</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <script>
+        const socket = io();
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('input-pesan');
+        const messages = document.getElementById('messages');
+        const typingStatus = document.getElementById('typing-status'); // Elemen baru
+
+        // --- 1. KIRIM PESAN ---
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('kirim-pesan', input.value);
+                input.value = '';
+            }
+        });
+
+        // --- 2. TERIMA PESAN ---
+        socket.on('terima-pesan', (msg) => {
+            const item = document.createElement('li');
+            item.textContent = msg;
+            messages.appendChild(item);
+            
+            // Kalau pesan sudah masuk, hilangkan tulisan "sedang mengetik"
+            typingStatus.textContent = ''; 
+        });
+
+        // --- TUGAS: DETEKSI NGETIK ---
+        
+        // A. Kirim Sinyal saat user ngetik
+        input.addEventListener('input', () => {
+            // Kirim sinyal ke server "Hei aku lagi ngetik nih"
+            socket.emit('sedang-ngetik');
+        });
+
+        // B. Terima Sinyal dari server (Broadcast)
+        let timeout; // Variabel buat nyimpen timer
+        
+        socket.on('info-ngetik', (msg) => {
+            // Tampilkan teksnya
+            typingStatus.textContent = msg;
+
+            // Reset timer sebelumnya (biar gak kedip-kedip kalau ngetik cepet)
+            clearTimeout(timeout);
+
+            // Hilangkan teks setelah 3 detik gak ada aktivitas
+            timeout = setTimeout(() => {
+                typingStatus.textContent = '';
+            }, 3000);
+        });
+
+    </script>
+</body>
+</html>
